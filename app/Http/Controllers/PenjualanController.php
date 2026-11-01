@@ -1,20 +1,34 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Penjualan;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+
 class PenjualanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('q');
+        $status = $request->query('status');
+
         $penjualan = Penjualan::query()
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('kode_transaksi', 'like', "%{$search}%")
+                        ->orWhere('nama_pelanggan', 'like', "%{$search}%")
+                        ->orWhere('nama_produk', 'like', "%{$search}%");
+                });
+            })
+            ->when($status, fn ($query, $status) => $query->where('status', $status))
             ->orderByDesc('tanggal')
             ->orderByDesc('id')
             ->get();
 
         $totalOmzet = Penjualan::where('status', 'Selesai')->sum('total');
 
-        return view('penjualan.index', compact('penjualan', 'totalOmzet'));
+        return view('penjualan.index', compact('penjualan', 'totalOmzet', 'search', 'status'));
     }
 
     public function create()
@@ -42,49 +56,49 @@ class PenjualanController extends Controller
         return redirect()
             ->route('penjualan.index')
             ->with('success', 'Transaksi berhasil ditambahkan.');
-}
+    }
 
-public function show(Penjualan $penjualan)
-{
-    return view('penjualan.show', compact('penjualan'));
-}
+    public function show(Penjualan $penjualan)
+    {
+        return view('penjualan.show', compact('penjualan'));
+    }
 
-public function edit(Penjualan $penjualan)
-{
-    return view('penjualan.edit', compact('penjualan'));
-}
+    public function edit(Penjualan $penjualan)
+    {
+        return view('penjualan.edit', compact('penjualan'));
+    }
 
-public function update(Request $request, Penjualan $penjualan)
-{
-    $validated = $request->validate([
-        'kode_transaksi' => [
-            'required', 'string', 'max:30',
-            Rule::unique('penjualan', 'kode_transaksi')->ignore($penjualan->id),
-        ],
-        'tanggal' => ['required', 'date'],
-        'nama_pelanggan' => ['required', 'string', 'max:100'],
-        'nama_produk' => ['required', 'string', 'max:120'],
-        'jumlah' => ['required', 'integer', 'min:1'],
-        'harga_satuan' => ['required', 'numeric', 'min:0'],
-        'status' => ['required', Rule::in(['Selesai', 'Pending', 'Batal'])],
-        'catatan' => ['nullable', 'string', 'max:1000'],
-    ]);
+    public function update(Request $request, Penjualan $penjualan)
+    {
+        $validated = $request->validate([
+            'kode_transaksi' => [
+                'required', 'string', 'max:30',
+                Rule::unique('penjualan', 'kode_transaksi')->ignore($penjualan->id),
+            ],
+            'tanggal' => ['required', 'date'],
+            'nama_pelanggan' => ['required', 'string', 'max:100'],
+            'nama_produk' => ['required', 'string', 'max:120'],
+            'jumlah' => ['required', 'integer', 'min:1'],
+            'harga_satuan' => ['required', 'numeric', 'min:0'],
+            'status' => ['required', Rule::in(['Selesai', 'Pending', 'Batal'])],
+            'catatan' => ['nullable', 'string', 'max:1000'],
+        ]);
 
-    $validated['total'] = $validated['jumlah'] * $validated['harga_satuan'];
+        $validated['total'] = $validated['jumlah'] * $validated['harga_satuan'];
 
-    $penjualan->update($validated);
+        $penjualan->update($validated);
 
-    return redirect()
-        ->route('penjualan.index')
-        ->with('success', 'Transaksi berhasil diperbarui.');
-}
+        return redirect()
+            ->route('penjualan.index')
+            ->with('success', 'Transaksi berhasil diperbarui.');
+    }
 
-public function destroy(Penjualan $penjualan)
-{
-    $penjualan->delete();
+    public function destroy(Penjualan $penjualan)
+    {
+        $penjualan->delete();
 
-    return redirect()
-        ->route('penjualan.index')
-        ->with('success', 'Transaksi berhasil dihapus.');
+        return redirect()
+            ->route('penjualan.index')
+            ->with('success', 'Transaksi berhasil dihapus.');
     }
 }

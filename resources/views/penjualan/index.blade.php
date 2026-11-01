@@ -17,6 +17,23 @@
 </div>
 
 <div class="card">
+    <form action="{{ route('penjualan.index') }}" method="GET" class="actions">
+        <input type="text" name="q" value="{{ $search }}"
+                placeholder="Cari kode, pelanggan, atau produk..." style="max-width: 320px;">
+
+        <select name="status" style="max-width: 180px;">
+            <option value="">Semua status</option>
+            @foreach (['Selesai', 'Pending', 'Batal'] as $s)
+                <option value="{{ $s }}" @selected($status === $s)>{{ $s }}</option>
+            @endforeach
+        </select>
+
+        <button class="btn btn-primary" type="submit">Terapkan</button>
+        <a class="btn" href="{{ route('penjualan.index') }}">Reset</a>
+    </form>
+</div>
+
+<div class="card">
     <table>
         <thead>
             <tr>
@@ -37,7 +54,7 @@
                     <td>{{ $item->nama_pelanggan }}</td>
                     <td>{{ $item->nama_produk }}</td>
                     <td>Rp {{ number_format((float) $item->total, 0, ',', '.') }}</td>
-                    <td><span class="badge">{{ $item->status }}</span></td>
+                    <td><span class="badge badge-{{ strtolower($item->status) }}">{{ $item->status }}</span></td>
                     <td>
                         <div class="actions">
                             <a class="btn" href="{{ route('penjualan.show', $item) }}">Detail</a>
@@ -56,7 +73,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="muted">Belum ada transaksi.</td>
+                    <td colspan="7" class="muted">Tidak ada transaksi yang sesuai.</td>
                 </tr>
             @endforelse
         </tbody>
