@@ -9,7 +9,6 @@
             --bg: #f6f7f9;
             --card: #ffffff;
             --text: #1f2937;
-            Modul Praktikum Laravel Lanjutan | CRUD Penjualan Sederhana
             --muted: #6b7280;
             --line: #e5e7eb;
             --accent: #dc2626;
@@ -61,6 +60,9 @@
         .error { color: #b91c1c; font-size: 13px; margin-top: 5px; }
         .metric { font-size: 28px; font-weight: 700; }
         .badge { padding: 5px 9px; border-radius: 999px; background: #f3f4f6; font-size: 12px; }
+        .badge-selesai { background: #dcfce7; color: #166534; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-batal   { background: #fee2e2; color: #991b1b; }
         @media (max-width: 700px) {
             .grid { grid-template-columns: 1fr; }
             .topbar { align-items: flex-start; gap: 12px; flex-direction: column; }
@@ -71,8 +73,9 @@
 <body>
     <main class="container">
         @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+            <div class="alert alert-success">{{ session('success') }}</div>
         @endif
+
         @yield('content')
     </main>
 </body>
